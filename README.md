@@ -1,26 +1,34 @@
-# homebrew-grr
+# homebrew
 
-Homebrew tap for [grr](https://github.com/debanjanbasu/grr-cli) — Google tools from the terminal, at maximum performance (Gmail, Calendar, Drive, Contacts, Chat, Forms).
+Homebrew tap for [debanjanbasu](https://github.com/debanjanbasu)'s projects on macOS and Linux.
+
+## Formulas
+
+| Formula | Project | Platforms |
+|---|---|---|
+| [grr](https://grr-cli.pages.dev) | Google tools from the terminal - Gmail, Calendar, Drive, Contacts, Chat, Forms | macOS (arm64), Linux (x86_64) |
 
 ## Install
 
-Tap the repository, then install:
+Since Homebrew 4.4, third-party taps must be trusted before their formulas can be installed:
 
 ```
-brew tap debanjanbasu/grr && brew install grr
+brew tap debanjanbasu/homebrew
+brew trust debanjanbasu/homebrew
+brew install grr
 ```
 
-Or install straight from the tap in a single command:
+Or install straight from the tap by full formula name (the tap is added automatically; trust is still required):
 
 ```
-brew install debanjanbasu/grr/grr
+brew trust debanjanbasu/homebrew && brew install debanjanbasu/homebrew/grr
 ```
 
 ## Requirements
 
-- macOS on Apple Silicon (arm64) — no Intel (x86_64) macOS build is published
+- macOS on Apple Silicon (arm64) - no Intel (x86_64) macOS build is published
 - Linux on x86_64
 
 ## More
 
-Source code, releases, and the issue tracker live in the [grr-cli repository](https://github.com/debanjanbasu/grr-cli).
+Source code, releases, and the issue tracker live in each project's repository. grr: [debanjanbasu/grr-cli](https://github.com/debanjanbasu/grr-cli).
