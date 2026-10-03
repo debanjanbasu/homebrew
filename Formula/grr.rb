@@ -23,7 +23,16 @@ class Grr < Formula
   end
 
   def install
-    bin.install "grr"
+    # The release tarballs store the binary under its target name
+    # (macos-aarch64, linux-x86_64, linux-aarch64), so map it to `grr` here.
+    target = if OS.mac?
+      "macos-aarch64"
+    elsif Hardware::CPU.arm?
+      "linux-aarch64"
+    else
+      "linux-x86_64"
+    end
+    bin.install target => "grr"
   end
 
   test do

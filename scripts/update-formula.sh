@@ -12,10 +12,12 @@ tag="$(gh api "repos/$repo/releases/latest" --jq .tag_name)"
 ver="${tag#v}"
 base="https://github.com/$repo/releases/download/$tag"
 
-# Windows has no Homebrew, so only the macOS and Linux tarballs are referenced.
+# Assets are named grr-v<version>-<target>.tar.zst — the v is part of the
+# name, not just the tag. Windows has no Homebrew, so only the macOS and
+# Linux tarballs are referenced.
 sums="$(curl -fsSL "$base/SHA256SUMS")"
 asset_sha() {
-  printf '%s\n' "$sums" | awk -v name="grr-${ver}-$1.tar.zst" '$2 == name { print $1 }'
+  printf '%s\n' "$sums" | awk -v name="grr-${tag}-$1.tar.zst" '$2 == name { print $1 }'
 }
 mac="$(asset_sha macos-aarch64)"
 lx64="$(asset_sha linux-x86_64)"
@@ -36,23 +38,32 @@ class Grr < Formula
   on_macos do
     depends_on arch: :arm64
 
-    url "$base/grr-${ver}-macos-aarch64.tar.zst"
+    url "$base/grr-${tag}-macos-aarch64.tar.zst"
     sha256 "$mac"
   end
 
   on_linux do
     on_arch :arm do
-      url "$base/grr-${ver}-linux-aarch64.tar.zst"
+      url "$base/grr-${tag}-linux-aarch64.tar.zst"
       sha256 "$larm"
     end
     on_arch :x86_64 do
-      url "$base/grr-${ver}-linux-x86_64.tar.zst"
+      url "$base/grr-${tag}-linux-x86_64.tar.zst"
       sha256 "$lx64"
     end
   end
 
   def install
-    bin.install "grr"
+    # The release tarballs store the binary under its target name
+    # (macos-aarch64, linux-x86_64, linux-aarch64), so map it to \`grr\` here.
+    target = if OS.mac?
+      "macos-aarch64"
+    elsif Hardware::CPU.arm?
+      "linux-aarch64"
+    else
+      "linux-x86_64"
+    end
+    bin.install target => "grr"
   end
 
   test do
