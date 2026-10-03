@@ -1,0 +1,48 @@
+name: Update grr formula
+
+# Keeps Formula/grr.rb on the latest grr-cli release without any cross-repo
+# secret: this tap's own GITHUB_TOKEN reads the public release + SHA256SUMS.
+# grr-cli's release workflow cannot push here (its token is repo-scoped), so
+# the tap pulls instead of the release pushing.
+#
+# A six-hour cadence: a fresh release lands in the formula within six hours of
+# publication (usually at the next tick), and a manual workflow_dispatch
+# updates it immediately when that latency matters.
+
+on:
+  schedule:
+    # Off the hour, and offset from the hour-aligned clamour of every other
+    # scheduled job. Ticks at 00:23, 06:23, 12:23, 18:23 UTC.
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-grr
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Regenerate Formula/grr.rb
+        env:
+          # The script shells out to `gh api` for the latest release.
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash scripts/update-formula.sh
+          if git diff --quiet; then
+            echo "formula already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/grr.rb
+          git commit -m "grr: update formula to the latest release"
+          git push
